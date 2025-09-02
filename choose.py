@@ -2,8 +2,17 @@ import time
 import requests
 from bs4 import BeautifulSoup
 
+authen = {
+    'username': '',
+    'password': '',
+}
+
 courseList=[
-    {'BJDM':'20251-014100-T411041003-1753879498897','lx':'2','fromKzwid':'d4cb37030bc24378b67304064e00c948','fromDxzwid':'3650EDADF723DD8DE0630211FE0AE544'}, #强化学习 2-9周 星期一[6-7节]A212;10-16周 星期一[6-7节]A212;17周 星期一[6-7节]A212
+	{'BJDM':'20251-014100-T411041003-1753879498897',
+	 'lx':'2',
+	 'fromKzwid':'d4cb37030bc24378b67304064e00c948',
+	 'fromDxzwid':'3650EDADF723DD8DE0630211FE0AE544'}, 
+	#强化学习 2-9周 星期一[6-7节]A212;10-16周 星期一[6-7节]A212;17周 星期一[6-7节]A212
     ]
 
 '''
@@ -17,21 +26,18 @@ lx:4,haveCourses，已选课，不管
 lx:99,openedCourses，开设课程，不管
 lx:101,导师审核信息，不管
 '''
-
 cour_name = [
         "强化学习",
     ]
-
-authen = {
-    'username': '',
-    'password': '',
-}
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
 }
 
 session = requests.Session()
+
+def get_stamp():
+    return str(int(time.time() * 1000))
 
 def get_web(url):
     try:
@@ -57,53 +63,62 @@ login_data = {
 
 r = session.post("https://sso.buaa.edu.cn/login", data=login_data)
 
-indx = "https://yjsxk.buaa.edu.cn/yjsxkapp/sys/xsxkappbuaa/xsxkHome/loadPublicInfo_course.do"
-tt=int(time.time() * 1000)
-indx=indx+"?_="+str(tt)
-rc = get_web(indx)
-rr = rc.json()
-csrf=rr["csrfToken"]
+def get_csrf():
+    indx = "https://yjsxk.buaa.edu.cn/yjsxkapp/sys/xsxkappbuaa/xsxkHome/loadPublicInfo_course.do?_="
+    rc = get_web(indx + get_stamp())
+    rr = rc.json()
+    csrf = rr["csrfToken"]
+    return csrf
 
-def query(j,k,timestamp):
-    xk="https://yjsxk.buaa.edu.cn/yjsxkapp/sys/xsxkappbuaa/xsxkYxxk/choiceCourse.do?_="
-    xk = xk + str(timestamp)
+def query(j,k,csrf):
+    xk="https://yjsxk.buaa.edu.cn/yjsxkapp/sys/xsxkappbuaa/xsxkCourse/choiceCourse.do?_="
+    xk = xk + get_stamp()
     kc_data={
         'bjdm': k['BJDM'],
         'skfsdm': "01", #02线上上课
         'lx': k['lx'],
         'csrfToken': csrf,
-        'fromKzwid':k['fromKzwid'],
-        'fromDxzwid':k['fromDxzwid']
     }
     r = session.post(xk, data=kc_data)
     rj = r.json()
-    if rj["msg"] == "页面已过期，请刷新页面后重试":
-        exit()
+    if rj['msg']=='页面已过期，请刷新页面后重试':
+        return "error"
     else:
-        print(cour_name[j]+"  "+rj["msg"])
+        print(cour_name[j] + ":" + rj['msg'])
+        if (rj['code'] == 1):
+            jg_data = {
+                'xid': rj["msg"],
+                'sfhqdqxkqqs': '1',
+            }
+            jg_url = "https://yjsxk.buaa.edu.cn/yjsxkapp/sys/xsxkappbuaa/xsxkCourse/loadXkjgRes.do?_=" + get_stamp()
+            jg = session.post(jg_url, data=jg_data)
+            jgj = jg.json()
+            if (jgj['dqxkqqs'] == 1):
+                print('选课成功。')
+            else:
+                print("选课失败。")
+        return "OK"
 
-    '''
-    tamp=int(time.time() * 1000)
-    jg_url="https://yjsxk.buaa.edu.cn/yjsxkapp/sys/xsxkappbuaa/xsxkCourse/loadXkjgRes.do"+ str(tamp)
-    jg = session.post(xk,data=kc_data)
-    jgj=jg.json()
-    print(jgj)
-    '''
-
-def qk(cours):
+def qk(cours, csrf):
     j = 0
-    for i in cours:
-        t = int(time.time() * 1000)
-        query(j, i, t)
-        j=j+1
+    for k in cours:
+        a = query(j, k, csrf)
+        if a == "OK":
+            j += 1
+        if a == "error":
+            print("界面刷新。")
+            return "error"
+    time.sleep(0.8)
 
 if __name__ == "__main__":
-	print("尝试：")
-	qk(courseList)
-	input("按任意键继续。\n")
-	i=2
-	while True:
-		print("第"+str(i)+"次抢课。")
-		qk(courseList)
-		print("\n")
-		i=i+1
+    csrf=get_csrf()
+    i=1
+    while True:
+        print("第"+str(i)+"次抢课。")
+        a=qk(courseList,csrf)
+        print("\n")
+        if a == "error":
+            csrf = get_csrf()
+        if i % 50 == 0:
+            time.sleep(5)
+        i=i+1
