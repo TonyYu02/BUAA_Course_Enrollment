@@ -2,34 +2,25 @@ import time
 import requests
 from bs4 import BeautifulSoup
 
+#这边开始是要填写的
 authen = {
     'username': '',
     'password': '',
 }
 
 courseList=[
-	{'BJDM':'20251-014100-T411041003-1753879498897',
-	 'lx':'2',
-	 'fromKzwid':'d4cb37030bc24378b67304064e00c948',
-	 'fromDxzwid':'3650EDADF723DD8DE0630211FE0AE544'}, 
-	#强化学习 2-9周 星期一[6-7节]A212;10-16周 星期一[6-7节]A212;17周 星期一[6-7节]A212
+    {'BJDM':'20241-011400-D141061013-1750378896390',
+     'lx':'2',
+     'skfsdm': "01",  # 02线上上课
+     'fromKzwid':'c02d2af43530470fa6c190ef358ea45d',
+     }, #工程优化实验
     ]
 
-'''
-关于lx
-lx:0,title:plannedCourses，计划内课程
-lx:1,publicElectiveCourses，任选课
-lx:2,programCourses，培养方案内课程
-lx:5,retakeCourses，重修课
-lx:20,undergraduateCourse，本科课程
-lx:4,haveCourses，已选课，不管
-lx:99,openedCourses，开设课程，不管
-lx:101,导师审核信息，不管
-'''
 cour_name = [
-        "强化学习",
+        "工程优化实验",
     ]
 
+#以下不要动
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
 }
@@ -63,6 +54,21 @@ login_data = {
 
 r = session.post("https://sso.buaa.edu.cn/login", data=login_data)
 
+def get_zwid(file):
+    t=get_stamp()
+    id_url="https://yjsxk.buaa.edu.cn/yjsxkapp/sys/xsxkappbuaa/xsxkCourse/loadFanCourseInfo.do?_="+t+"&pageSize=100"
+    zw = get_web(id_url)
+    zwj = zw.json()
+    for i in zwj["datas"]:
+        if "ISKZ" in i :
+            if "DXZWID" in i :
+                file.write(i["KCLBMC"]+"—"+i["KCMC"]+'\n')
+                file.write("DXZWID:"+i["DXZWID"]+'\n')
+                file.write("KZWID:"+i["KZWID"]+'\n\n')
+            else:
+                file.write(i["KCLBMC"] + "—" + i["KCMC"]+'\n')
+                file.write("KZWID:" + i["KZWID"]+'\n\n')
+
 def get_csrf():
     indx = "https://yjsxk.buaa.edu.cn/yjsxkapp/sys/xsxkappbuaa/xsxkHome/loadPublicInfo_course.do?_="
     rc = get_web(indx + get_stamp())
@@ -70,15 +76,24 @@ def get_csrf():
     csrf = rr["csrfToken"]
     return csrf
 
-def query(j,k,csrf):
-    xk="https://yjsxk.buaa.edu.cn/yjsxkapp/sys/xsxkappbuaa/xsxkCourse/choiceCourse.do?_="
-    xk = xk + get_stamp()
-    kc_data={
+def get_post(k,csrf):
+    kc = {
         'bjdm': k['BJDM'],
-        'skfsdm': "01", #02线上上课
+        'skfsdm': k['skfsdm'],  # 02线上上课
         'lx': k['lx'],
         'csrfToken': csrf,
     }
+    if 'fromKzwid' in k and 'fromDxzwid' in k:
+        kc['fromKzwid']=k['fromKzwid']
+        kc['fromDxzwid']=k['fromDxzwid'],
+    elif 'fromKzwid' in k and 'fromDxzwid' not in k:
+        kc['fromKzwid']=k['fromKzwid']
+    return kc
+
+def query(j,k,csrf):
+    xk="https://yjsxk.buaa.edu.cn/yjsxkapp/sys/xsxkappbuaa/xsxkCourse/choiceCourse.do?_="
+    xk = xk + get_stamp()
+    kc_data=get_post(k,csrf)
     r = session.post(xk, data=kc_data)
     rj = r.json()
     if rj['msg']=='页面已过期，请刷新页面后重试':
@@ -90,10 +105,12 @@ def query(j,k,csrf):
                 'xid': rj["msg"],
                 'sfhqdqxkqqs': '1',
             }
+            time.sleep(0.5)
             jg_url = "https://yjsxk.buaa.edu.cn/yjsxkapp/sys/xsxkappbuaa/xsxkCourse/loadXkjgRes.do?_=" + get_stamp()
             jg = session.post(jg_url, data=jg_data)
             jgj = jg.json()
-            if (jgj['dqxkqqs'] == 1):
+            print(jgj)
+            if (jgj['msg'] == '{"code":1}'):
                 print('选课成功。')
             else:
                 print("选课失败。")
