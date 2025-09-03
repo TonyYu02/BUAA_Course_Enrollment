@@ -1,4 +1,5 @@
 ## BUAA抢课
+##### 这学期选课结束啦，第一次写抢课代码，摸索了好久，还好抢课系统和不少学校用的个一样的hhh，亲测可用，希望下次能帮到大家咯，明年见~
 
 目前为未完成状态，正在陆续更新以下功能
 - [x] 基础选课，主要是post的data数据结构
@@ -32,3 +33,7 @@
    ```
    
 3. 运行即可
+
+### 参考
+[fdu_course_enrollment](https://github.com/JarynWong/fdu_course_enrollment)
+[BIT-CourseRace](https://github.com/Jump-Wang-111/BIT-CourseRace)
