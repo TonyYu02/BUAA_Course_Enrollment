@@ -10,13 +10,13 @@
 
 ### 使用方法
 1. 填写学号、密码，运行`cxid.py`  
-2. 获取所选课程所需的信息，主要是
+2. 填写所选课程所需的信息，主要是
    ```
    'BJDM':'',#课程的代码
    'lx':'',#类型
-   'fromKzwid':'',#课组wid
-   'fromDxzwid':'',#和上面一样，一般的做法是从`loadFanCourseInfo.do?_=time&pageSize=100`中获取
-   'skfsdm': "01", #02线上上课，这个在第78行，可以自行加到字典中
+   'skfsdm': "",  # 01线下上课，02线上上课
+   'fromKzwid':'', #课组wid
+   'fromDxzwid':'', #不知道是啥id的简称
    ```
    其中：
    ```
@@ -31,8 +31,9 @@
 
    'fromKzwid'和'fromDxzwid'从id.txt获取
    ```
-   
-3. 运行即可
+   另外需要填写课程的名称，方便输出
+
+4. 运行即可
 
 ### 参考
 [fdu_course_enrollment](https://github.com/JarynWong/fdu_course_enrollment)
