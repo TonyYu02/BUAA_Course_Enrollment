@@ -36,5 +36,5 @@
 4. 运行即可
 
 ### 参考
-[fdu_course_enrollment](https://github.com/JarynWong/fdu_course_enrollment)
+[fdu_course_enrollment](https://github.com/JarynWong/fdu_course_enrollment)  
 [BIT-CourseRace](https://github.com/Jump-Wang-111/BIT-CourseRace)
