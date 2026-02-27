@@ -35,6 +35,22 @@
 
 4. 运行即可
 
+### 开课信息查询
+直接loadcourse全输出就行：`https://yjsxk.buaa.edu.cn/yjsxkapp/sys/xsxkappbuaa/xsxkCourse/loadAllCourseInfo.do?_=timestamp&pageSize=8000`，会输出所有开课信息，BJDM可从中获取。
+
+### 关于退课
+退课的逻辑相对比较简单，主要是post一个退课请求，数据是bjdm和csrfToken，例如：  
+```
+ca="https://yjsxk.buaa.edu.cn/yjsxkapp/sys/xsxkappbuaa/xsxkCourse/cancelCourse.do?_=" + get_stamp()
+ca_data = {
+   'bjdm': "xxxxxxxxxxxxxxxxx",
+   'csrfToken': csrf,
+ }
+cca = session.post(ca, data=ca_data)
+camsg=cca.json()
+print(camsg['msg'])
+```
+
 ### 参考
 [fdu_course_enrollment](https://github.com/JarynWong/fdu_course_enrollment)  
 [BIT-CourseRace](https://github.com/Jump-Wang-111/BIT-CourseRace)
