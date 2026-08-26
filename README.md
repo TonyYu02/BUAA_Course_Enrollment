@@ -1,5 +1,6 @@
 ## BUAA抢课
-#### 这学期选课结束啦，第一次写抢课代码，摸索了好久，还好抢课系统和不少学校用的个一样的hhh，亲测可用，希望下次能帮到大家咯，明年见~
+
+建议配合[预选课](https://github.com/TonyYu02/BUAA_For_Pre-selected_Course_Enrollment)使用
 
 正在陆续更新以下功能
 - [x] 基础选课，主要是post的data数据结构
