@@ -157,7 +157,6 @@ if __name__ == "__main__":
 
         if a == "error":
             csrf = get_csrf()
-        if i % 50 == 0:
-            time.sleep(5)
+
         i=i+1
     print("所有课程选课成功，程序结束。")
