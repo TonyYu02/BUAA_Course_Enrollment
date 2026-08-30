@@ -103,7 +103,7 @@ def get_post(k,csrf):
         kc['fromKzwid']=k['fromKzwid']
     return kc
 
-def query(j,k,csrf):
+def query(course_name,k,csrf):
     xk="https://yjsxk.buaa.edu.cn/yjsxkapp/sys/xsxkappbuaa/xsxkCourse/choiceCourse.do?_="
     xk = xk + get_stamp()
     kc_data=get_post(k,csrf)
@@ -112,7 +112,7 @@ def query(j,k,csrf):
     if rj['msg']=='页面已过期，请刷新页面后重试':
         return "error"
     else:
-        print(cour_name[j] + ":" + rj['msg'])
+        print(course_name + ":" + rj['msg'])
         if (rj['code'] == 1):
             jg_data = {
                 'xid': rj["msg"],
@@ -125,30 +125,39 @@ def query(j,k,csrf):
             print(jgj)
             if (jgj['msg'] == '{"code":1}'):
                 print('选课成功。')
+                return "success"
             else:
                 print("选课失败。")
         return "OK"
 
-def qk(cours, csrf):
-    j = 0
-    for k in cours:
-        a = query(j, k, csrf)
-        if a == "OK":
-            j += 1
+def qk(cours, names, csrf):
+    successful_indexes = []
+    for j, k in enumerate(cours):
+        a = query(names[j], k, csrf)
+        if a == "success":
+            successful_indexes.append(j)
         if a == "error":
             print("界面刷新。")
-            return "error"
+            return "error", successful_indexes
     time.sleep(0.8)
+    return "OK", successful_indexes
 
 if __name__ == "__main__":
     csrf=get_csrf()
+    pending_courses = courseList.copy()
+    pending_names = cour_name.copy()
     i=1
-    while True:
+    while pending_courses:
         print("第"+str(i)+"次抢课。")
-        a=qk(courseList,csrf)
-        print("\n")
+        a, successful_indexes = qk(pending_courses, pending_names, csrf)
+
+        for index in reversed(successful_indexes):
+            del pending_courses[index]
+            del pending_names[index]
+
         if a == "error":
             csrf = get_csrf()
         if i % 50 == 0:
             time.sleep(5)
         i=i+1
+    print("所有课程选课成功，程序结束。")
