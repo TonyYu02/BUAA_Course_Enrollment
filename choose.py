@@ -2,12 +2,7 @@ import time
 import requests
 from bs4 import BeautifulSoup
 
-#这边开始是要填写的
-authen = {
-    'username': '',
-    'password': '',
-}
-
+############################## 这边开始是要填写的 ##############################
 courseList=[
     {'BJDM':'20241-011400-D141061013-1750378896390',
      'lx':'2',
@@ -20,7 +15,25 @@ cour_name = [
         "工程优化实验",
     ]
 
-#以下不要动
+############################## 以下不要动 ##############################
+def read_account_info(file_path="account.txt"):
+    authen = {}
+
+    with open(file_path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if "：" in line:
+                key, value = line.split("：", 1)
+            elif ":" in line:
+                key, value = line.split(":", 1)
+            key = key.strip()
+            value = value.strip()
+            if key == "账号": authen["username"] = value
+            elif key == "密码": authen["password"] = value
+    return authen
+
+authen = read_account_info("account.txt")
+
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
 }
