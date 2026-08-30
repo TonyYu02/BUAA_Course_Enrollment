@@ -69,5 +69,9 @@ for mc in chaxun:
     for cinfo in jgj["datas"]:
         if "KCMC" in cinfo and cinfo["KCMC"] == mc:
             print("课程名称："+cinfo["KCMC"])
+            if "RKJS" in cinfo:
+                print("任课教师："+cinfo["RKJS"])
+            if "PKSJ" in cinfo:
+                print("上课时间："+cinfo["PKSJ"])
             print("BJDM：" + cinfo["BJDM"])
             print("\n")
